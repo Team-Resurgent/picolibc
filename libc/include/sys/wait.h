@@ -40,6 +40,7 @@ _BEGIN_STD_C
 pid_t wait(int *);
 pid_t waitpid(pid_t, int *, int);
 pid_t wait3(int *, int, struct rusage *);
+pid_t wait4(pid_t, int *, int, struct rusage *);
 
 _END_STD_C
 

@@ -159,6 +159,9 @@ int                            getsubopt(char **, char                          
 #endif
 #if __XSI_VISIBLE >= 500
 int grantpt(int fd) __picolibc_export;
+int unlockpt(int fd) __picolibc_export;
+char *ptsname(int fd) __picolibc_export;
+int posix_openpt(int flags) __picolibc_export;
 #endif
 #if __SVID_VISIBLE || __XSI_VISIBLE >= 4 || __BSD_VISIBLE
 char *initstate(unsigned, char *, size_t) __picolibc_export;

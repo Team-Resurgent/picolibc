@@ -144,6 +144,9 @@ int   posix_madvise(void *addr, size_t len, int advice);
 int madvise(void *addr, size_t len, int advice);
 #endif
 
+int shm_open(const char *name, int oflag, __mode_t mode);
+int shm_unlink(const char *name);
+
 _END_STD_C
 
 #endif /* _SYS_MMAN_H_ */
