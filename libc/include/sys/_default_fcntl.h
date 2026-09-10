@@ -219,6 +219,16 @@ extern int open64(const char *, int, ...);
 #endif
 #endif
 
+/* POSIX advisory / preallocation (RXDK: fadvise is a no-op, fallocate extends). */
+#define POSIX_FADV_NORMAL     0
+#define POSIX_FADV_RANDOM     1
+#define POSIX_FADV_SEQUENTIAL 2
+#define POSIX_FADV_WILLNEED   3
+#define POSIX_FADV_DONTNEED   4
+#define POSIX_FADV_NOREUSE    5
+int posix_fadvise(int __fd, off_t __offset, off_t __len, int __advice);
+int posix_fallocate(int __fd, off_t __offset, off_t __len);
+
 _END_STD_C
 
 #endif /* !_SYS__DEFAULT_FCNTL_H_ */
