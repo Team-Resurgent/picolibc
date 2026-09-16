@@ -39,8 +39,8 @@
 #include <stdint.h>
 #include <sys/param.h>
 
-#if !defined(__i386__) && !defined(__x86_64)
-#error
+#if !defined(__i386__) && !defined(__x86_64__)
+#error "machine/x86 _tls.h is x86-only (expected __i386__ or __x86_64__)"
 #endif
 
 typedef struct {
