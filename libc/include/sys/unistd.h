@@ -238,6 +238,8 @@ int pipe2(int __fildes[2], int flags) __picolibc_export;
 #if __POSIX_VISIBLE >= 200809 || __XSI_VISIBLE >= 500
 ssize_t pread(int __fd, void *__buf, size_t __nbytes, off_t __offset) __picolibc_export;
 ssize_t pwrite(int __fd, const void *__buf, size_t __nbytes, off_t __offset) __picolibc_export;
+ssize_t copy_file_range(int __infd, off_t *__inoff, int __outfd, off_t *__outoff,
+                        size_t __len, unsigned int __flags) __picolibc_export;
 #endif
 ssize_t read(int __fd, void *__buf, size_t __nbyte) __picolibc_export;
 #if __BSD_VISIBLE
