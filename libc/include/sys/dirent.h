@@ -70,6 +70,8 @@ typedef struct {
     int           fd;
     size_t        offset;
     size_t        count;
+    long          pos;        /* entry index readdir will return next (telldir) */
+    int           restart;    /* next batch fetch restarts the kernel scan */
     struct dirent dirent;
     union {
         char       buf[512];
