@@ -337,6 +337,7 @@ int setdtablesize(int) __picolibc_export;
 #if __BSD_VISIBLE || __XSI_VISIBLE >= 500
 void sync(void) __picolibc_export;
 #endif
+int syncfs(int __fd) __picolibc_export;
 
 #if __BSD_VISIBLE || __POSIX_VISIBLE >= 200112 || __XSI_VISIBLE >= 4
 ssize_t readlink(const char * __restrict __path, char * __restrict __buf,

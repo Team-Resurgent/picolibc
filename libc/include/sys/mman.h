@@ -143,6 +143,9 @@ int   posix_madvise(void *addr, size_t len, int advice);
 #if __GNU_VISIBLE
 int madvise(void *addr, size_t len, int advice);
 #endif
+/* POSIX shared memory: no cross-process namespace on the console (ENOSYS). */
+int shm_open(const char *name, int oflag, __mode_t mode);
+int shm_unlink(const char *name);
 
 _END_STD_C
 

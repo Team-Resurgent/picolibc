@@ -40,6 +40,22 @@ _BEGIN_STD_C
 pid_t wait(int *);
 pid_t waitpid(pid_t, int *, int);
 pid_t wait3(int *, int, struct rusage *);
+pid_t wait4(pid_t, int *, int, struct rusage *);
+
+/* waitid()/idtype_t need siginfo_t, which <signal.h> exposes only under
+   __POSIX_VISIBLE; guard the addition the same way. A single-title console has
+   no children, so waitid() fails ECHILD (posix_unsupported.c). */
+#if __POSIX_VISIBLE
+#include <signal.h>   /* siginfo_t */
+typedef enum { P_ALL = 0, P_PID = 1, P_PGID = 2 } idtype_t;
+#ifndef WEXITED
+#define WEXITED    0x04
+#define WSTOPPED   0x08
+#define WCONTINUED 0x10
+#define WNOWAIT    0x01000000
+#endif
+int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
+#endif
 
 _END_STD_C
 
