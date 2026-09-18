@@ -76,6 +76,9 @@ __fallback_sysconf(int name)
         return _POSIX_OPEN_MAX;
     case _SC_PAGE_SIZE:
         return 4096;
+    case _SC_NPROCESSORS_CONF:
+    case _SC_NPROCESSORS_ONLN:
+        return 1;
 #if 0
     case _SC_PTHREAD_DESTRUCTOR_ITERATIONS:
         return _POSIX_THREAD_DESTRUCTOR_ITERATIONS;
