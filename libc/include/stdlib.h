@@ -141,6 +141,9 @@ double _erand48_r(struct _rand48 *, unsigned short[3]) __picolibc_export;
 #endif
 __noreturn void exit(int __status) __picolibc_export;
 void            free(void *) __nothrow __picolibc_export;
+/* C23 sized deallocation (RXDK: the size/alignment are advisory -> free()). */
+void            free_sized(void *__ptr, size_t __size) __nothrow __picolibc_export;
+void            free_aligned_sized(void *__ptr, size_t __alignment, size_t __size) __nothrow __picolibc_export;
 char           *getenv(const char *__string) __picolibc_export;
 #if __GNU_VISIBLE
 extern __picolibc_export char **__argv;
