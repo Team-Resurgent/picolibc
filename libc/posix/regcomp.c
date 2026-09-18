@@ -707,6 +707,13 @@ p_bracket(struct parse *p)
         CHadd(cs, '-');
     (void)MUSTEAT(']', REG_EBRACK);
 
+    /* A missing ']' just made MUSTEAT call seterr(), which frees p->g->sets /
+       p->g->setbits (leaving cs dangling). Bail before touching the set again,
+       matching this function's invariant that no set operations run after an
+       error. */
+    if (p->error != 0)
+        return;
+
     if (p->g->cflags & REG_ICASE) {
         int i;
         int ci;
