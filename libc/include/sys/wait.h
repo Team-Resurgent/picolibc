@@ -48,10 +48,18 @@ pid_t wait4(pid_t, int *, int, struct rusage *);
 #if __POSIX_VISIBLE
 #include <signal.h>   /* siginfo_t */
 typedef enum { P_ALL = 0, P_PID = 1, P_PGID = 2 } idtype_t;
+/* waitid() option bits; guarded individually because sys/_wait.h already defines
+   some (e.g. WCONTINUED) with its own value -- keep those, add the rest. */
 #ifndef WEXITED
 #define WEXITED    0x04
+#endif
+#ifndef WSTOPPED
 #define WSTOPPED   0x08
+#endif
+#ifndef WCONTINUED
 #define WCONTINUED 0x10
+#endif
+#ifndef WNOWAIT
 #define WNOWAIT    0x01000000
 #endif
 int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
