@@ -671,7 +671,15 @@
 
 /*
  * fall-through case statement annotations
+ *
+ * RXDK-360: __fallthrough is a reserved-style identifier that other SDK headers
+ * define and use differently - e.g. the Xbox 360 XDK's <sal.h> defines it as a
+ * full statement and writes `case X: __fallthrough` (no trailing ';'), which the
+ * bare [[fallthrough]] attribute form breaks ("attribute only allowed on empty
+ * statements"). No picolibc header uses __fallthrough, so gate our definition
+ * behind an opt-in and let the consuming SDK own it.
  */
+#if defined(_PICOLIBC_FALLTHROUGH_ATTR)
 #if __cplusplus >= 201703L || __STDC_VERSION__ > 201710L
 /* Standard C++17/C23 attribute */
 #define __fallthrough [[fallthrough]]
@@ -683,6 +691,7 @@
     do {              \
     } while (0)
 #endif
+#endif /* _PICOLIBC_FALLTHROUGH_ATTR */
 
 /*  The traditional meaning of 'extern inline' for GCC is not
   to emit the function body unless the address is explicitly
