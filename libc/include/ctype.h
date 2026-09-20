@@ -316,8 +316,13 @@ extern __picolibc_export const short _ctype_wide[];
 #define __CTYPE_BLANK 0x080 /* blank (but not tab) */
 #define __CTYPE_TAB   0x100 /* tab (only in wide table) */
 
-#ifdef __cplusplus
-/* We need these legacy symbols to build libstdc++ */
+/* RXDK-360: these single-underscore-capital names (_U/_L/_N/_S/_P/_C/_X/_B) are
+ * reserved identifiers, and defining them as macros pollutes the global namespace
+ * and collides with code that uses them as identifiers - e.g. the stock XDK
+ * headers use _X/_Y as parameter names (float.h's _chgsign(double _X)). They were
+ * only ever needed to build GNU libstdc++; the RXDK-360 toolchain uses libc++,
+ * which does not, so gate them behind an explicit opt-in (off by default). */
+#if defined(__cplusplus) && defined(_PICOLIBC_LEGACY_CTYPE_MACROS)
 #define _U __CTYPE_UPPER
 #define _L __CTYPE_LOWER
 #define _N __CTYPE_DIGIT
