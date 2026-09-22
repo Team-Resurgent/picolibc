@@ -141,9 +141,14 @@ double _erand48_r(struct _rand48 *, unsigned short[3]) __picolibc_export;
 #endif
 __noreturn void exit(int __status) __picolibc_export;
 void            free(void *) __nothrow __picolibc_export;
-/* C23 sized deallocation (RXDK: the size/alignment are advisory -> free()). */
-void            free_sized(void *__ptr, size_t __size) __nothrow __picolibc_export;
-void            free_aligned_sized(void *__ptr, size_t __alignment, size_t __size) __nothrow __picolibc_export;
+#if __STDC_VERSION__ >= 202311L
+/* C23 7.24.3.3/4: sized deallocation hints. Provided by RXDK runtime glue
+   (runtime/xbox/c23_alloc.c); both forward to free() -- the size/alignment are
+   advisory. */
+void free_sized(void *__ptr, size_t __size) __nothrow __picolibc_export;
+void free_aligned_sized(void *__ptr, size_t __alignment, size_t __size)
+    __nothrow __picolibc_export;
+#endif
 char           *getenv(const char *__string) __picolibc_export;
 #if __GNU_VISIBLE
 extern __picolibc_export char **__argv;
@@ -155,6 +160,9 @@ int                            getsubopt(char **, char                          
 #endif
 #if __XSI_VISIBLE >= 500
 int grantpt(int fd) __picolibc_export;
+int unlockpt(int fd) __picolibc_export;
+char *ptsname(int fd) __picolibc_export;
+int posix_openpt(int flags) __picolibc_export;
 #endif
 #if __SVID_VISIBLE || __XSI_VISIBLE >= 4 || __BSD_VISIBLE
 char *initstate(unsigned, char *, size_t) __picolibc_export;
