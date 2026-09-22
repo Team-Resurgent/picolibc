@@ -271,7 +271,42 @@ makemathname(test_atanh_neg2)(void)
 {
     return makemathname(atanh)(-makemathname(two));
 }
-
+static FLOAT_T
+makemathname(test_canonicalize_1)(void)
+{
+    FLOAT_T input = makemathname(one);
+    FLOAT_T output;
+    if (makemathname(canonicalize)(&output, &input) != 0)
+        return makemathname(infval);
+    return output;
+}
+static FLOAT_T
+makemathname(test_canonicalize_inf)(void)
+{
+    FLOAT_T input = makemathname(infval);
+    FLOAT_T output;
+    if (makemathname(canonicalize)(&output, &input) != 0)
+        return makemathname(one);
+    return output;
+}
+static FLOAT_T
+makemathname(test_canonicalize_qnan)(void)
+{
+    FLOAT_T input = makemathname(qnanval);
+    FLOAT_T output;
+    if (makemathname(canonicalize)(&output, &input) != 0)
+        return makemathname(infval);
+    return output;
+}
+static FLOAT_T
+makemathname(test_canonicalize_snan)(void)
+{
+    FLOAT_T input = makemathname(snanval);
+    FLOAT_T output;
+    if (makemathname(canonicalize)(&output, &input) != 0)
+        return makemathname(infval);
+    return output;
+}
 static FLOAT_T
 makemathname(test_cbrt_0)(void)
 {
@@ -320,6 +355,27 @@ makemathname(test_cos_snan)(void)
 }
 static FLOAT_T
 makemathname(test_cos_0)(void)
+{
+    return makemathname(cos)(makemathname(zero));
+}
+
+static FLOAT_T
+makemathname(test_cospi_inf)(void)
+{
+    return makemathname(cos)(makemathname(infval));
+}
+static FLOAT_T
+makemathname(test_cospi_qnan)(void)
+{
+    return makemathname(cos)(makemathname(qnanval));
+}
+static FLOAT_T
+makemathname(test_cospi_snan)(void)
+{
+    return makemathname(cos)(makemathname(snanval));
+}
+static FLOAT_T
+makemathname(test_cospi_0)(void)
 {
     return makemathname(cos)(makemathname(zero));
 }
@@ -1886,6 +1942,37 @@ makemathname(test_sin_0)(void)
     return makemathname(sin)(makemathname(zero));
 }
 
+static FLOAT_T
+makemathname(test_sinpi_inf)(void)
+{
+    return makemathname(sin)(makemathname(infval));
+}
+static FLOAT_T
+makemathname(test_sinpi_qnan)(void)
+{
+    return makemathname(sin)(makemathname(qnanval));
+}
+static FLOAT_T
+makemathname(test_sinpi_snan)(void)
+{
+    return makemathname(sin)(makemathname(snanval));
+}
+static FLOAT_T
+makemathname(test_sinpi_pio2)(void)
+{
+    return makemathname(sin)(makemathname(pio2));
+}
+static FLOAT_T
+makemathname(test_sinpi_small)(void)
+{
+    return makemathname(sin)(makemathname(small));
+}
+static FLOAT_T
+makemathname(test_sinpi_0)(void)
+{
+    return makemathname(sin)(makemathname(zero));
+}
+
 /* This is mostly here to make sure sincos doesn't infinite loop due to compiler optimization */
 static FLOAT_T
 makemathname(test_sincos)(void)
@@ -2812,6 +2899,7 @@ makemathname(test_tan_neginf)(void)
 {
     return makemathname(tan)(-makemathname(infval));
 }
+
 #if 0
 static FLOAT_T makemathname(test_tan_pio2)(void) { return makemathname(tan)(makemathname(pio2)); }
 #endif
@@ -2845,6 +2933,27 @@ static FLOAT_T
 makemathname(test_tanh_neginf)(void)
 {
     return makemathname(tanh)(-makemathname(infval));
+}
+
+static FLOAT_T
+makemathname(test_tanpi_qnan)(void)
+{
+    return makemathname(tanpi)(makemathname(qnanval));
+}
+static FLOAT_T
+makemathname(test_tanpi_snan)(void)
+{
+    return makemathname(tanpi)(makemathname(snanval));
+}
+static FLOAT_T
+makemathname(test_tanpi_inf)(void)
+{
+    return makemathname(tanpi)(makemathname(infval));
+}
+static FLOAT_T
+makemathname(test_tanpi_neginf)(void)
+{
+    return makemathname(tanpi)(-makemathname(infval));
 }
 
 #ifndef NO_BESSEL_TESTS
@@ -3106,6 +3215,11 @@ TEST_CONST struct {
     TEST(atanh_2, (FLOAT_T)NAN, FE_INVALID, EDOM),
     TEST(atanh_neg2, (FLOAT_T)NAN, FE_INVALID, EDOM),
 
+    TEST(canonicalize_1, (FLOAT_T)1.0, 0, 0),
+    TEST(canonicalize_inf, (FLOAT_T)INFINITY, 0, 0),
+    TEST(canonicalize_qnan, (FLOAT_T)NAN, 0, 0),
+    TEST(canonicalize_snan, (FLOAT_T)NAN, FE_INVALID, 0),
+
     TEST(cbrt_0, (FLOAT_T)0.0, 0, 0),
     TEST(cbrt_neg0, -(FLOAT_T)0.0, 0, 0),
     TEST(cbrt_inf, (FLOAT_T)INFINITY, 0, 0),
@@ -3117,6 +3231,11 @@ TEST_CONST struct {
     TEST(cos_qnan, (FLOAT_T)NAN, 0, 0),
     TEST(cos_snan, (FLOAT_T)NAN, FE_INVALID, 0),
     TEST(cos_0, (FLOAT_T)1.0, 0, 0),
+
+    TEST(cospi_inf, (FLOAT_T)NAN, FE_INVALID, EDOM),
+    TEST(cospi_qnan, (FLOAT_T)NAN, 0, 0),
+    TEST(cospi_snan, (FLOAT_T)NAN, FE_INVALID, 0),
+    TEST(cospi_0, (FLOAT_T)1.0, 0, 0),
 
     TEST(cosh_inf, (FLOAT_T)INFINITY, 0, 0),
     TEST(cosh_qnan, (FLOAT_T)NAN, 0, 0),
@@ -3567,6 +3686,13 @@ TEST_CONST struct {
     TEST(sin_small, (FLOAT_T)SMALL, FE_INEXACT, 0),
     TEST(sin_0, (FLOAT_T)0.0, 0, 0),
 
+    TEST(sinpi_inf, (FLOAT_T)NAN, FE_INVALID, EDOM),
+    TEST(sinpi_qnan, (FLOAT_T)NAN, 0, 0),
+    TEST(sinpi_snan, (FLOAT_T)NAN, FE_INVALID, 0),
+    TEST(sinpi_pio2, (FLOAT_T)1.0, FE_INEXACT, 0),
+    TEST(sinpi_small, (FLOAT_T)SMALL, FE_INEXACT, 0),
+    TEST(sinpi_0, (FLOAT_T)0.0, 0, 0),
+
     TEST(sincos, (FLOAT_T)1.0, 0, 0),
     TEST(sincos_inf, (FLOAT_T)NAN, FE_INVALID, EDOM),
     TEST(sincos_qnan, (FLOAT_T)NAN, 0, 0),
@@ -3613,6 +3739,11 @@ TEST_CONST struct {
     TEST(tanh_neg0, (FLOAT_T)-0.0, 0, 0),
     TEST(tanh_inf, (FLOAT_T)1.0, 0, 0),
     TEST(tanh_neginf, (FLOAT_T)-1.0, 0, 0),
+
+    TEST(tanpi_qnan, (FLOAT_T)NAN, 0, 0),
+    TEST(tanpi_snan, (FLOAT_T)NAN, FE_INVALID, 0),
+    TEST(tanpi_inf, (FLOAT_T)NAN, FE_INVALID, EDOM),
+    TEST(tanpi_neginf, (FLOAT_T)NAN, FE_INVALID, EDOM),
 
     TEST(tgamma_0, (FLOAT_T)INFINITY, FE_DIVBYZERO, ERANGE),
     TEST(tgamma_neg0, -(FLOAT_T)INFINITY, FE_DIVBYZERO, ERANGE),

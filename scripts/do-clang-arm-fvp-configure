@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Copyright © 2019 Keith Packard
+# Copyright 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,32 +33,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-
-qemu="qemu-system-riscv32"
-
-# select the program
-#elf=hello-world-riscv.elf
-elf=hello-world++-riscv.elf
-
-# Set the target machine
-machine=virt,accel=tcg
-cpu=rv32
-
-# Map stdio to a multiplexed character device so we can use it
-# for the monitor and semihosting output
-
-chardev=stdio,mux=on,id=stdio0
-
-# Point the semihosting driver at our new chardev
-
-semi=enable=on,chardev=stdio0,arg="test-file"
-
-# Point the monitor at the new chardev too
-
-mon=chardev=stdio0,mode=readline
-
-# Disable the serial port
-
-serial=chardev:stdio0
-
-$qemu -chardev $chardev -semihosting-config $semi -mon $mon -serial $serial -machine $machine -cpu $cpu -kernel $elf -bios none -nographic "$@"
+exec "$(dirname "$0")"/do-configure clang-arm-none-eabi-fvp \
+     -Dmultilib-include=arm-none-eabi/armv7a -Dmultilib-exclude=unaligned \
+     -Dtests=true -Dtest-machine=fvp "$@"

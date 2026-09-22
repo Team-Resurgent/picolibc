@@ -388,7 +388,8 @@ conv_brk(FILE *stream, scanf_context_t *context, width_t width, void *addr, cons
             if (fmt != _fmt + 1) {
                 if (f == ']')
                     break;
-                if (f == '-' && !frange) {
+                /* A trailing '-' is a literal scanset member. */
+                if (f == '-' && !frange && *fmt != ']') {
                     frange = true;
                     continue;
                 }
@@ -747,19 +748,15 @@ vfscanf(FILE *stream, const CHAR *fmt, va_list ap_orig)
             if (c == 'c') {
                 if (!(flags & FL_WIDTH))
                     width = 1;
-                bool have_put = false;
 #if defined(_NEED_IO_MBTOWIDE) || defined(_NEED_IO_WIDETOMB)
                 mbstate_t ps = { 0 };
 #endif
                 do {
                     WINT wi = getmb(stream, &context, &ps, flags);
                     if (IS_WEOF(wi)) {
-                        if (have_put)
-                            break;
                         goto eof;
                     }
                     putmb(addr, wi, &ps, flags, goto eof);
-                    have_put = true;
                 } while (--width);
                 c = 1; /* no matter with smart GCC	*/
 

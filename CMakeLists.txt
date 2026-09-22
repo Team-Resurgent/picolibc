@@ -35,7 +35,7 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-project(Picolibc VERSION 1.8.11 LANGUAGES C ASM)
+project(Picolibc VERSION 1.8.12 LANGUAGES C ASM)
 
 # Set a default build type if none was specified
 set(default_build_type "MinSizeRel")
@@ -44,6 +44,10 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES AND NOT DEFINED ZEPHYR
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
+endif()
+
+if(ZEPHYR_BASE AND DEFINED NATIVE_TARGET_ARCH)
+  set(CMAKE_SYSTEM_PROCESSOR ${NATIVE_TARGET_ARCH})
 endif()
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
@@ -80,6 +84,11 @@ if(NOT DEFINED __FAST_STRCMP)
   option(__FAST_STRCMP "Always optimize strcmp for performance" ON)
 endif()
 
+# Use RISC-V paired-word strcmp (dual-issue / fused-load cores)
+if(NOT DEFINED __STRCMP_PAIR)
+  option(__STRCMP_PAIR "Use RISC-V paired-word strcmp" OFF)
+endif()
+
 # use global errno variable
 if(NOT DEFINED __GLOBAL_ERRNO)
   option(__GLOBAL_ERRNO "use global errno variable" OFF)
@@ -102,6 +111,10 @@ endif()
 
 if(NOT DEFINED MALLOC_SMALL_BUCKET)
   option(MALLOC_SMALL_BUCKET "use fixed bucket sizes for allocations no larger than this" 0)
+endif()
+
+if(NOT DEFINED __PICOLIBC_EXPORT)
+  option(__PICOLIBC_EXPORT "Annotate public picolibc APIs with default (exported) visibility" OFF)
 endif()
 
 option(POSIX_CONSOLE "Use POSIX I/O for stdin/stdout/stderr" OFF)
@@ -240,6 +253,15 @@ endif()
 
 if(NOT DEFINED __IO_DEFAULT)
   set(__IO_DEFAULT d)
+endif()
+
+# Directory prefix and buffer size for tmpnam()/tmpfile() names. tmpdir must be
+# empty or already end with a path separator (it is concatenated with the
+# template, no slash added); __L_tmpnam must hold tmpdir + "TXXXXXX" + NUL.
+if(DEFINED tmpdir)
+  set(__P_tmpdir ${tmpdir})
+  string(LENGTH ${tmpdir} tmpdir_len)
+  math(EXPR __L_tmpnam "${tmpdir_len} + 8")
 endif()
 
 # math library sets errno

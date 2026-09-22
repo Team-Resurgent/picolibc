@@ -36,22 +36,30 @@
 tests_real_trig = [
   'test-acos',
   'test-acosh',
+  'test-acospi',
   'test-asin',
   'test-asinh',
+  'test-asinpi',
   'test-atan',
   'test-atan2',
   'test-atanh',
+  'test-atanpi',
+  'test-atan2pi',
   'test-cos',
   'test-cosh',
+  'test-cospi',
   'test-sin',
   'test-sincos-cos',
   'test-sincos-sin',
   'test-sinh',
+  'test-sinpi',
   'test-tan',
-  'test-tanh'
+  'test-tanh',
+  'test-tanpi',
 ]
 
 tests_real_exp = [
+  'test-compoundn',
   'test-exp',
   'test-exp10',
   'test-exp2',
@@ -60,7 +68,8 @@ tests_real_exp = [
   'test-log10',
   'test-log1p',
   'test-log2',
-  'test-pow'
+  'test-pow',
+  'test-pown',
 ]
 
 tests_real_other = [
@@ -122,11 +131,12 @@ tests = tests_real_trig + tests_real_exp + tests_real_other
 tests += tests_complex_trig + tests_complex_exp + tests_complex_other
 tests += tests_other
 
-functions = [ 'acos', 'acosh', 'asin', 'asinh', 'atan', 'atanh',
-              'cbrt', 'cos', 'cosh', 'erf', 'erfc', 'exp', 'exp10', 'exp2',
-              'expm1', 'j0', 'j1', 'lgamma', 'log', 'log10', 'log1p', 'log2',
-              'sin', 'sincos_cos', 'sincos_sin', 'sinh', 'sqrt', 'tan', 'tanh', 'tgamma', 'y0', 'y1',
-            ]
+functions = [ 'acos', 'acosh', 'acospi', 'asin', 'asinh', 'asinpi',
+              'atan', 'atanh', 'atanpi', 'cbrt', 'cos', 'cosh',
+              'cospi', 'erf', 'erfc', 'exp', 'exp10', 'exp2', 'expm1',
+              'j0', 'j1', 'lgamma', 'log', 'log10', 'log1p', 'log2',
+              'sin', 'sinpi', 'sincos_cos', 'sincos_sin', 'sinh',
+              'sqrt', 'tan', 'tanh', 'tanpi', 'tgamma', 'y0', 'y1', ]
 
 test_extra_libs = {}
 
@@ -191,7 +201,7 @@ foreach params : targets
 
   if enable_exhaustive_math_tests
     foreach f : functions
-      test_name = 'test-math-compare-' + f
+      test_name = 'test-math-compare-' + f + target
       test_function_name_arg=['-DTEST_FUNC=' + f]
       test(test_name,
            executable(test_name, 'test-math-compare.c',

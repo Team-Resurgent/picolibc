@@ -594,14 +594,24 @@ int vfprintf_s(FILE * __restrict stream, const char * __restrict fmt,
 #endif
 
 /*
- * The format of tmpnam names is TXXXXXX, which works with mktemp
+ * P_tmpdir must be empty or end with a path separator; L_tmpnam must fit
+ * P_tmpdir + the template + NUL. The build may set these via meson/cmake tmpdir
+ * (__L_tmpnam/__P_tmpdir); otherwise RXDK places scratch files on the Z: utility
+ * drive ("Z:\Txxxxxx"), so default L_tmpnam to 16 (was 8) and P_tmpdir to "Z:\\".
  */
+#ifdef __L_tmpnam
+#define L_tmpnam __L_tmpnam
+#else
 #define L_tmpnam 16 /* RXDK: room for "Z:\\Txxxxxx" scratch paths (was 8) */
+#endif
 
-/*
- * RXDK tmpfile/tmpnam place scratch files on the Z: utility drive.
- */
-#define P_tmpdir "Z:\\"
+#if __MISC_VISIBLE || XSI_VISIBLE
+#ifdef __P_tmpdir
+#define P_tmpdir __P_tmpdir
+#else
+#define P_tmpdir "Z:\\" /* RXDK: scratch files on the Z: utility drive */
+#endif
+#endif
 
 /*
  * We don't have any way of knowing any underlying POSIX limits,

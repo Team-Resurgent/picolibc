@@ -35,6 +35,7 @@ These options control some general build configuration values.
 | multilib                    | true    | Build every multilib configuration supported by the compiler                         |
 | multilib-list               | <empty> | If non-empty, the set of multilib configurations to compile for                      |
 | multilib-exclude            | <empty> | Multilib configurations containing any of these strings will not be built            |
+| multilib-include            | <empty> | If non-empty, only build multilib configurations containing any of these strings     |
 | b_sanitize=_option list_    | false   | Build the library -fsanitize set to the provided list, e.g. -Db_sanitize=undefined   |
 | sanitize-trap-on-error      | false   | Build the library with -fsanitize-undefined-trap-on-error                            |
 | sanitize-allow-missing      | false   | Don't bail if the selected sanitize option is not supported by the compiler          |
@@ -42,6 +43,8 @@ These options control some general build configuration values.
 | analyzer                    | false   | Enable the analyzer while compiling with -fanalyzer                                  |
 | assert-verbose              | false   | Display file, line and expression in assert() messages                               |
 | fast-strcmp                 | true    | Always optimize strcmp for performance (to make Dhrystone happy)                     |
+| strcmp-pair                 | false   | Use RISC-V paired-word strcmp (dual-issue / fused-load cores)                        |
+| picolibc-export             | true    | Annotate public picolibc APIs with default (exported) visibility                     |
 
 ### Installation options
 
@@ -168,7 +171,7 @@ constant time instead.
 
 ### Locking options
 
-This option selects whether to disable locking support within the
+These options select whether to disable locking support within the
 library. By default, locking support is enabled, but the default
 locking functions are just stubs which don't do anything. Applications
 can replace these stubs with their own implementation and enable full
@@ -177,6 +180,7 @@ locking as described in [locking.md](locking.md).
 | Option                      | Default | Description                                                                          |
 | ------                      | ------- | -----------                                                                          |
 | single-thread               | false   | Disable support for locks                                                            |
+| stdio-locking               | false   | Perform POSIX-conforming per-file locking for all stdio operations (ignored when single-thread is true) |
 
 ### Thread local storage options
 

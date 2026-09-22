@@ -80,6 +80,7 @@ picolibc_sources(
   mbstowcs.c
   mbtowc.c
   mbtowc_r.c
+  memalignment.c
   mrand48.c
   nrand48.c
   putenv.c
@@ -115,6 +116,9 @@ picolibc_sources(
   exitprocs.c
   onexit.c
   cxa-atexit.c
+  at-quick-exit.c
+  quick-exit.c
+  cxa-at-quick-exit.c
   set_constraint_handler_s.c
   ignore_handler_s.c
   )

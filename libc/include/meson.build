@@ -81,6 +81,7 @@ inc_headers = [
   'setjmp.h',
   'signal.h',
   'spawn.h',
+  'stdckdint.h',
   'stdint.h',
   'stdio.h',
   'stdio-bufio.h',
@@ -107,6 +108,10 @@ if have_complex
 endif
 
 inc_headers += ['picotls.h']
+
+if enable_libdl
+  inc_headers += ['dlfcn.h']
+endif
 
 if really_install
   install_headers(inc_headers,

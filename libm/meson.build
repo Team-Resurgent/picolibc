@@ -33,7 +33,7 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-libdirs = ['math', 'common', 'fenv', 'ld']
+libdirs = ['math', 'common', 'math_two', 'fenv', 'ld']
 
 if have_complex
   libdirs = libdirs + ['complex']
@@ -49,7 +49,7 @@ else
   srcs_libm_machine = []
 endif
 
-inc = [include_directories('common'), inc]
+inc = [include_directories('common'), include_directories('math_two'), inc]
 
 foreach libdir : libdirs
   subdir(libdir)

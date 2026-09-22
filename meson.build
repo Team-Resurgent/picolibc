@@ -1,7 +1,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Copyright © 2019-2021 Keith Packard
+# Copyright © 2019-2026 Keith Packard
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -42,7 +42,7 @@ project('picolibc', 'c',
 	],
 	license : 'BSD',
 	meson_version : '>= 0.61',
-	version: '1.8.11'
+	version: '1.8.12'
        )
 
 # When picolibc is embedded as a subproject you probably don't expect
@@ -127,11 +127,13 @@ endif
 enable_multilib = get_option('multilib')
 multilib_list = get_option('multilib-list')
 multilib_exclude = get_option('multilib-exclude')
+multilib_include = get_option('multilib-include')
 enable_picocrt = get_option('picocrt')
 enable_picocrt_lib = get_option('picocrt-lib')
 picocrt_enable_mmu = get_option('picocrt-enable-mmu')
 test_machine = get_option('test-machine')
 enable_tests = get_option('tests')
+enable_libdl = get_option('libdl')
 if get_option('tests-cdefs') == 'auto'
   enable_cdefs_tests = enable_tests
 else
@@ -454,11 +456,18 @@ endif
 # test_c_args       target test C code
 # test_cpp_args     target test C++ code
 
+global_link_args = []
+foreach ld : ['-Wl,--no-warn-rwx-segments', '-Wl,--no-fatal-warnings', '-Wl,-znoexecstack']
+  if cc.has_multi_link_arguments(link_test_args + [ld])
+    global_link_args += [ld]
+  endif
+endforeach
+
 # Get additional flags used for linking tests.
 
-test_link_args_base = runtime_lib
+test_link_args_base = runtime_lib + global_link_args
 
-test_link_args_extra = ['-Wl,--gc-sections', '-Wl,--no-warn-rwx-segments']
+test_link_args_extra = ['-Wl,--gc-sections']
 
 if profile
   test_link_args_extra += ['-pg']
@@ -473,6 +482,7 @@ foreach ld : test_link_args_extra
 endforeach
 
 fast_strcmp = get_option('fast-strcmp')
+strcmp_pair = get_option('strcmp-pair')
 
 mb_capable = get_option('mb-capable')
 mb_extended_charsets = mb_capable and get_option('mb-extended-charsets')
@@ -669,12 +679,14 @@ endif
 # CompCert does not support bitfields in packed structs, so avoid using this optimization
 bitfields_in_packed_structs_code = '''
 struct test { int part: 24; } __attribute__((packed));
+unsigned int foobar (const struct test *p);
 unsigned int foobar (const struct test *p) { return p->part; }
 '''
 have_bitfields_in_packed_structs = cc.compiles(bitfields_in_packed_structs_code, name : 'packed structs may contain bitfields', args: c_args)
 
 # CompCert does not support _Complex
 complex_code = '''
+float _Complex test(float _Complex z);
 float _Complex test(float _Complex z) { return z; }
 '''
 have_complex = cc.compiles(complex_code, name : 'supports _Complex', args: c_args)
@@ -692,8 +704,8 @@ have_alloc_size = cc.compiles(alloc_size_code, name : 'attribute __alloc_size__'
 
 # attributes constructor/destructor are a GNU extension - if the compiler doesn't have them, don't test them.
 attr_ctor_dtor_code = '''
-void __attribute__((constructor(101))) ctor (void) {}
-void __attribute__((destructor(101))) dtor (void) {}
+static void __attribute__((constructor(101))) ctor (void) {}
+static void __attribute__((destructor(101))) dtor (void) {}
 '''
 have_attr_ctor_dtor = cc.compiles(attr_ctor_dtor_code, name : 'attributes constructor/destructor', args : werror_c_args)
 
@@ -717,14 +729,23 @@ if enable_multilib
   foreach target : target_list
     tmp = target.split(';')
     matches_exclude = false
+    if multilib_include != []
+      matches_exclude = true
+      foreach include : multilib_include
+        if tmp[0].contains(include)
+          matches_exclude = false
+          break
+        endif
+      endforeach
+    endif
     foreach exclude : multilib_exclude
       if tmp[0].contains(exclude)
         matches_exclude = true
-        message('skipping target ' + tmp[0])
         break
       endif
     endforeach
     if matches_exclude
+      message('skipping target ' + tmp[0])
       continue
     endif
 
@@ -1015,6 +1036,12 @@ foreach params : [default_target] + targets
     if cc.get_linker_id() == 'ld.eld'
       picolibc_ld_data.set('TLS_PHDRS', 'tls PT_TLS;')
       picolibc_ld_data.set('TLS_INIT_PHDR', 'tls')
+    endif
+
+    if host_cpu_family == 'riscv'
+      picolibc_ld_data.set('RISCV', '')
+    else
+      picolibc_ld_data.set('RISCV', ld_comment)
     endif
 
     default_init_section_template = init_section_template.format('@0@', '''
@@ -1408,6 +1435,14 @@ if not have_has_builtin
     ['builtin_ctz', '__builtin_ctz((unsigned int)42)', 'int'],
     ['builtin_ctzl', '__builtin_ctzl((unsigned long)42)', 'int'],
     ['builtin_ctzll', '__builtin_ctzll((unsigned long long)42)', 'int'],
+    ['builtin_stdc_bit_width', '__builtin_stdc_bit_width(42U)', 'unsigned int'],
+    ['builtin_clzg', '__builtin_clzg(42U, 8*sizeof(42U))', 'unsigned int'],
+    ['builtin_clz', '__builtin_clz(42U)', 'int'],
+    ['builtin_clzl', '__builtin_clzl(42UL)', 'int'],
+    ['builtin_constant_p', '__builtin_constant_p(1)', 'int'],
+    ['builtin_align_up', '__builtin_align_up((unsigned) 1, (unsigned) 8)', 'unsigned'],
+    ['builtin_align_down', '__builtin_align_down((unsigned) 15, (unsigned) 8)', 'unsigned'],
+    ['builtin_is_aligned', '__builtin_is_aligned((unsigned) 4, (unsigned) 2)', 'int'],
     ['builtin_copysignl', '__builtin_copysignl((long double)42, (long double) 42)', 'long double'],
     ['builtin_copysign', '__builtin_copysign(42, 42)', 'double'],
     ['builtin_isinfl', '__builtin_isinfl((long double)42)', 'int'],
@@ -1416,19 +1451,27 @@ if not have_has_builtin
     ['builtin_isnan', '__builtin_isnan((long double)42)', 'int'],
     ['builtin_finitel', '__builtin_finitel((long double)42)', 'int'],
     ['builtin_isfinite', '__builtin_isfinite((long double)42)', 'int'],
-    ['builtin_issignalingl', '__builtin_issignalingl((long double)42)', 'int'],
+    ['builtin_issignaling', '__builtin_issignaling((long double)42)', 'int'],
     ['builtin_mul_overflow', '__builtin_mul_overflow(1, 2, &u)', 'int'],
     ['builtin_add_overflow', '__builtin_add_overflow(1, 2, &u)', 'int'],
-    ['builtin_expect', '__builtin_expect(1 > 0)', 'int'],
+    ['builtin_expect', '__builtin_expect(1 > 0, 1)', 'int'],
+    ['builtin_unreachable', 'if (0) __builtin_unreachable();', 'void'],
   ]
 endif
 
 foreach builtin : builtins
-  builtin_template='''
-static int foo(@1@ i __attribute__((unused))) { return 0; }
-unsigned u;
-int main(void) { return foo(@0@); }
-'''
+  if builtin[2] == 'void'
+    builtin_template='''
+        int main(void) { @0@; return 0; }
+        '''
+  else
+    builtin_template='''
+        static int foo(@1@ i __attribute__((unused))) { return 0; }
+        unsigned u;
+        int main(void) { return foo(@0@); }
+        '''
+  endif
+
   builtin_code = builtin_template.format(builtin[1], builtin[2])
   have_current_builtin = cc.links(builtin_code, name : 'test for __' + builtin[0], args: c_args)
   if have_current_builtin
@@ -1471,6 +1514,7 @@ conf_data.set('__IEEE_LIBM', not get_option('want-math-errno'), description: 'ma
 conf_data.set('__MATH_ERRNO', get_option('want-math-errno'), description: 'math library sets errno')
 conf_data.set('__PREFER_SIZE_OVER_SPEED', get_option('optimization') == 's', description: 'Optimize for space over speed')
 conf_data.set('__FAST_STRCMP', fast_strcmp, description: 'Always optimize strcmp for performance')
+conf_data.set('__STRCMP_PAIR', strcmp_pair, description: 'Use RISC-V paired-word strcmp')
 conf_data.set('__GLOBAL_ERRNO', get_option('newlib-global-errno'), description: 'use global errno variable')
 conf_data.set('__INIT_FINI_ARRAY', get_option('initfini-array'), description: 'Support INIT_ARRAY linker sections')
 conf_data.set('__INIT_FINI_FUNCS', get_option('initfini'), description: 'Support _init() and _fini() functions')
@@ -1481,6 +1525,8 @@ conf_data.set('__THREAD_LOCAL_STORAGE_RP2040', get_option('tls-rp2040'),
 conf_data.set('__THREAD_LOCAL_STORAGE_STACK_GUARD', tls_stack_guard, description: 'use thread local storage for stack protection canary')
 conf_data.set('__HAVE_BITFIELDS_IN_PACKED_STRUCTS', have_bitfields_in_packed_structs, description: 'Use bitfields in packed structs')
 conf_data.set('__HAVE_COMPLEX', have_complex, description: 'Compiler supports _Complex')
+conf_data.set('__PICOLIBC_EXPORT', get_option('picolibc-export'),
+              description: 'Annotate public picolibc APIs with default (exported) visibility')
 
 conf_data.set('__MB_CAPABLE', mb_capable)
 if mb_capable
@@ -1493,6 +1539,19 @@ endif
 conf_data.set('__TINY_STDIO', true, description: 'Picolibc stdio comes from the avr C library')
 conf_data.set('__IO_DEFAULT', '\'@0@\''.format(format_default),
               description: 'The default printf and scanf variants')
+tmpdir = get_option('tmpdir')
+if tmpdir != '' and not tmpdir.endswith('/')
+  error('tmpdir must be empty or end with a path separator, got "@0@"'.format(tmpdir))
+endif
+if tmpdir != ''
+  strlen = find_program('scripts/strlen', required : true)
+  tmpdir_len_result = run_command(strlen, tmpdir, capture: true, check: true)
+  tmplen = tmpdir_len_result.stdout().to_int() + 8
+  conf_data.set('__P_tmpdir', '"@0@"'.format(tmpdir),
+                description: 'Directory prefix for temporary file names (P_tmpdir)')
+  conf_data.set('__L_tmpnam', tmplen,
+                description: 'Size of the tmpnam() buffer (L_tmpnam)')
+endif
 conf_data.set('__IO_SMALL_ULTOA',
               printf_small_ultoa,
               description: 'avoid software division in decimal conversion')
@@ -1689,6 +1748,10 @@ bios_bin = []
 
 subdir('libos')
 
+if enable_libdl
+  subdir('libdl')
+endif
+
 if use_stdlib or has_os_linux or has_os_fallback
   has_os_library = true
 endif
@@ -1717,6 +1780,8 @@ if get_option('test-long-double')
   test_c_args += ['-D_TEST_LONG_DOUBLE']
   native_c_args += ['-D_TEST_LONG_DOUBLE']
 endif
+
+native_c_args += ['-Wl,--no-fatal-warnings']
 
 test_env = environment()
 test_env.prepend('PATH', meson.current_source_dir() / 'scripts')
@@ -1760,8 +1825,8 @@ else
   endif
 endif
 
-if crt0_test_variant == 'semihost_smrnmi'
-  test_env.set('QEMU_ADD_SMRNMI', 'true')
+if crt0_test_variant == 'semihost_cfi'
+  test_env.set('QEMU_ADD_ZICFI', 'true')
 endif
 
 crt0_test = 'crt0_' + crt0_test_variant
@@ -1875,7 +1940,7 @@ if oslib_test != ''
                  ['-nostdlib', '-T', picolibc_noflash_ld_string])
     set_variable(test_link_depends_noflash_variable, [picolibc_noflash_ld_value])
   endforeach
-  test_noflash = linkerscript_test_variant == '' and crt0_test_variant != 'semihost_smrnmi'
+  test_noflash = linkerscript_test_variant == '' and crt0_test_variant != 'semihost_smrnmi' and crt0_test_variant != 'semihost_cfi'
 else
   test_link_args = test_link_args_base
   test_link_depends = []
@@ -1999,6 +2064,7 @@ crt0_default = meson.get_external_property('crt0_default', 'crt0')
 if system_libc
   specs_isystem = ''
   specs_libpath = ''
+  specs_libgccpath = ''
   # The '%s' here asks gcc to search for this file in the 'usual' library path
   specs_startfile = '%{-crt0=*:crt0-%*%O%s; :@0@%O%s}'.format(crt0_default)
 else

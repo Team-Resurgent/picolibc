@@ -39,8 +39,11 @@ set(tests
   test-malloc
   test-malloc-stress
   test-on_exit
+  test-quick-exit
   test-rand
   test-strtod
+  test-memalignment
+  test-stdckdint
   )
 
 set(tests_fail

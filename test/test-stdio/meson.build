@@ -40,6 +40,7 @@ tests = [
   'test-freopen',
   'test-fopencookie',
   'test-funopen',
+  'test-fwrite-fast-path',
   'test-put',
   'test-sprintf-percent-n',
   'test-sprintf-s',
@@ -78,9 +79,11 @@ endif
 if tests_enable_posix_io
   tests += [
     'test-posix-io',
+    'test-atexit-max',
     'test-dprintf',
     'test-fgetc',
     'test-fgets-eof',
+    'test-fflush',
     'test-fopen',
     'test-fread-fwrite',
     'test-mktemp',
