@@ -18,7 +18,14 @@ extern "C" {
 
 #define __STDC_ENDIAN_LITTLE__ 1234
 #define __STDC_ENDIAN_BIG__    4321
+/* Derive the native order from the compiler's per-target macro rather than
+   hardcoding it: the original Xbox (x86) is little-endian, but the Xbox 360
+   (PowerPC) is big-endian. */
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define __STDC_ENDIAN_NATIVE__ __STDC_ENDIAN_BIG__
+#else
 #define __STDC_ENDIAN_NATIVE__ __STDC_ENDIAN_LITTLE__
+#endif
 
 /* Per-type prototypes. */
 #define __STDBIT_DECL(SUF, T)                       \

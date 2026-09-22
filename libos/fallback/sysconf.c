@@ -78,7 +78,14 @@ __fallback_sysconf(int name)
         return 4096;
     case _SC_NPROCESSORS_CONF:
     case _SC_NPROCESSORS_ONLN:
+        /* The original Xbox (x86) is a single-core Pentium III; the Xbox 360
+           (PowerPC) is a Xenon: 3 cores x 2 hardware threads = 6. (RXDK-360's
+           runtime/xbox/sysconf.c overrides this fallback with the same 6.) */
+#if defined(__i386__)
         return 1;
+#else
+        return 6;
+#endif
 #if 0
     case _SC_PTHREAD_DESTRUCTOR_ITERATIONS:
         return _POSIX_THREAD_DESTRUCTOR_ITERATIONS;
