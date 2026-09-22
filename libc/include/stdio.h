@@ -596,20 +596,26 @@ int vfprintf_s(FILE * __restrict stream, const char * __restrict fmt,
 /*
  * P_tmpdir must be empty or end with a path separator; L_tmpnam must fit
  * P_tmpdir + the template + NUL. The build may set these via meson/cmake tmpdir
- * (__L_tmpnam/__P_tmpdir); otherwise RXDK places scratch files on the Z: utility
- * drive ("Z:\Txxxxxx"), so default L_tmpnam to 16 (was 8) and P_tmpdir to "Z:\\".
+ * (__L_tmpnam/__P_tmpdir). Otherwise the two consoles differ: the original Xbox
+ * (i386) has a Z: utility drive for scratch files ("Z:\Txxxxxx"), so L_tmpnam=16
+ * and P_tmpdir="Z:\\"; the Xbox 360 (PowerPC) has no such drive, so it keeps the
+ * stock defaults (L_tmpnam=8, P_tmpdir="") and the build/runtime supplies a path.
  */
 #ifdef __L_tmpnam
 #define L_tmpnam __L_tmpnam
+#elif defined(__i386__)
+#define L_tmpnam 16 /* original Xbox: room for "Z:\\Txxxxxx" scratch paths (was 8) */
 #else
-#define L_tmpnam 16 /* RXDK: room for "Z:\\Txxxxxx" scratch paths (was 8) */
+#define L_tmpnam 8
 #endif
 
 #if __MISC_VISIBLE || XSI_VISIBLE
 #ifdef __P_tmpdir
 #define P_tmpdir __P_tmpdir
+#elif defined(__i386__)
+#define P_tmpdir "Z:\\" /* original Xbox: scratch files on the Z: utility drive */
 #else
-#define P_tmpdir "Z:\\" /* RXDK: scratch files on the Z: utility drive */
+#define P_tmpdir "" /* Xbox 360 (and stock): no fixed scratch drive */
 #endif
 #endif
 
