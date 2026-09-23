@@ -21,13 +21,17 @@ _BEGIN_STD_C
    #undef basename will still let you invoke the underlying function.  However,
    this also implies that the POSIX version is used in this case.  That's made
    sure here. */
-/* RXDK: the upstream header renames the XPG basename to __xpg_basename via an
-   __asm__ label so it can coexist with the GNU basename from <string.h>. That
-   asm-label construct doesn't parse under the title toolchain, so declare the
-   XPG basename directly -- libc exports the symbol as plain "basename" (the XPG
-   variant), and #undef drops any GNU basename(s) macro string.h installed. */
+/* RXDK: <string.h> now declares the GNU basename under __GNU_VISIBLE as the C
+   identifier `basename` (bound by asm label to __gnu_basename). Declaring the XPG
+   basename here as another plain `basename` is then a conflicting-types error, so
+   bind the XPG variant to the real `basename` symbol under a private name and
+   redirect calls with a macro -- the way glibc separates __xpg_basename from the
+   GNU one. #undef first so any `basename` macro <string.h> installed is dropped
+   and the XPG variant wins; this also makes string.h skip its GNU block when it is
+   included after us (its guard is `__GNU_VISIBLE && !defined(basename)`). */
 #undef basename
-char *basename(char *);
+char *__xpg_basename(char *) __asm__("basename");
+#define basename __xpg_basename
 char *dirname(char *);
 
 _END_STD_C
