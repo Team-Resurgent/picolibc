@@ -355,6 +355,8 @@ mktime(struct tm *tim_p)
 
     /* reset isdst flag to what we have calculated */
     tim_p->tm_isdst = isdst;
+    tim_p->tm_gmtoff = -(long)offset;
+    tim_p->tm_zone = (isdst == 1 ? __tzname_dst : __tzname_std);
 
     set_tm_wday(days, tim_p);
 
@@ -372,6 +374,8 @@ timegm(struct tm *tim_p)
 
     /* The time is always UTC, so there is no daylight saving time. */
     tim_p->tm_isdst = 0;
+    tim_p->tm_gmtoff = 0;
+    tim_p->tm_zone = "GMT";
 
     set_tm_wday(days, tim_p);
 

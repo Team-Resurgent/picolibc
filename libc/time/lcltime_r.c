@@ -63,6 +63,10 @@ localtime_r(const time_t * __restrict tim_p, struct tm * __restrict res)
 
     offset = (res->tm_isdst == 1 ? __tzinfo.rule[1].offset : __tzinfo.rule[0].offset);
 
+    /* The rule offsets are POSIX TZ offsets, seconds west of UTC. */
+    res->tm_gmtoff = -offset;
+    res->tm_zone = (res->tm_isdst == 1 ? __tzname_dst : __tzname_std);
+
     hours = (int)(offset / SECSPERHOUR);
     offset = offset % SECSPERHOUR;
 

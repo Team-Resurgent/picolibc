@@ -79,6 +79,9 @@ struct tm {
     int tm_wday;
     int tm_yday;
     int tm_isdst;
+    /* POSIX.1-2024. Always present: the C standard reserves tm_ member names. */
+    long        tm_gmtoff; /* seconds east of UTC */
+    const char *tm_zone;   /* time zone abbreviation */
 };
 
 #if __POSIX_VISIBLE
