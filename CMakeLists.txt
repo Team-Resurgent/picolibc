@@ -179,6 +179,10 @@ if(NOT DEFINED __IO_FLOAT_EXACT)
   option(__IO_FLOAT_EXACT "Provide exact binary/decimal conversion for printf/scanf" ON)
 endif()
 
+if(NOT DEFINED __IO_FLOAT_ALL_DIGITS)
+  option(__IO_FLOAT_ALL_DIGITS "printf produces every requested significant digit of a double exactly" OFF)
+endif()
+
 if(NOT DEFINED __ASSERT_VERBOSE)
   option(__ASSERT_VERBOSE "Assert provides verbose information" ON)
 endif()

@@ -46,6 +46,7 @@ picolibc_sources(
   clearerr.c
   compare_exchange.c
   dprintf.c
+  dtoa_big.c
   dtox_engine.c
   ecvt.c
   ecvtf.c

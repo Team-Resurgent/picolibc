@@ -45,6 +45,7 @@ srcs_stdio = [
   'bufio_setvbuf.c',
   'clearerr.c',
   'compare_exchange.c',
+  'dtoa_big.c',
   'dtox_engine.c',
   'dprintf.c',
   'ecvt.c',

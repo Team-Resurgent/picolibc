@@ -571,6 +571,9 @@ vfprintf(FILE *stream, const CHAR *fmt, va_list ap_orig)
 #endif
 #if IO_VARIANT_IS_FLOAT(PRINTF_VARIANT)
         struct dtoa dtoa;
+#ifdef _NEED_IO_FLOAT_ALL_DIGITS
+        struct dtoa_big dtoa_big;
+#endif
 #endif
     } u;
     const char *pnt;

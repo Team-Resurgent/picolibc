@@ -71,6 +71,8 @@
 
 #cmakedefine __IO_FLOAT_EXACT
 
+#cmakedefine __IO_FLOAT_ALL_DIGITS
+
 #cmakedefine __IO_SMALL_ULTOA
 
 #cmakedefine __IO_PERCENT_N

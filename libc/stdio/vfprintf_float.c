@@ -31,10 +31,24 @@
 */
 {
     uint8_t       sign;         /* sign character (or 0)	*/
-    uint8_t       ndigs;        /* number of digits to convert */
+    int           ndigs;        /* number of digits to convert */
     unsigned char case_convert; /* subtract to correct case */
     int           n;            /* total width */
     uint8_t       ndigs_exp;    /* number of digis in exponent */
+#ifdef _NEED_IO_FLOAT_ALL_DIGITS
+    bool          big = false;  /* the digits are in u.dtoa_big */
+#define DTOA_DIGIT(i) (big ? __dtoa_big_digit(&u.dtoa_big, (i)) : u.dtoa.digits[i])
+/*
+ * The dtoa engine stops at max_dig digits, and when it has fewer digits than
+ * asked for (want, or for 'f' the digits up to the requested decimal place)
+ * they are the shortest that round-trip, which the output then zero-fills.
+ * That is only the correctly rounded result where the shortest digits are
+ * close enough to the exact value; otherwise redo the conversion exactly.
+ */
+#define DTOA_ALL_DIGITS(fval, want, max_dig)                                                  do {                                                                                         int _want = fmode ? u.dtoa.exp + 1 + ndecimal : (want);                                    if (!(u.dtoa.flags & (DTOA_ZERO | DTOA_INF | DTOA_NAN))                                          && (_want > (max_dig) || (ndigs < _want && !DTOA_PAD_EXACT(fval, _want)))) {                 ndigs = __dtoa_big_engine(fval, &u.dtoa_big, _want, fmode, ndecimal);                     big = true;                                                                          }                                                                                    } while (0)
+#else
+#define DTOA_DIGIT(i) (u.dtoa.digits[i])
+#endif
 
     /* deal with upper vs lower case */
     case_convert = TOLOWER(c) - c;
@@ -81,10 +95,17 @@
                     ndigs = 1;
             }
 
+            int want = ndigs;
+
             if (ndigs > LONG_FLOAT_MAX_DIG)
                 ndigs = LONG_FLOAT_MAX_DIG;
 
             ndigs = __lfloat_d_engine(fval, &u.dtoa, ndigs, fmode, ndecimal);
+#if defined(_NEED_IO_FLOAT_ALL_DIGITS) && __SIZEOF_LONG_DOUBLE__ == 8
+            DTOA_ALL_DIGITS(fval, want, LONG_FLOAT_MAX_DIG);
+#else
+            (void)want;
+#endif
 
             ndigs_exp = 2;
         }
@@ -132,10 +153,17 @@
                     ndigs = 1;
             }
 
+            int want = ndigs;
+
             if (ndigs > FLOAT_MAX_DIG)
                 ndigs = FLOAT_MAX_DIG;
 
             ndigs = __float_d_engine(fval, &u.dtoa, ndigs, fmode, ndecimal);
+#if defined(_NEED_IO_FLOAT_ALL_DIGITS) && defined(_NEED_IO_DOUBLE) && __SIZEOF_DOUBLE__ == 8
+            DTOA_ALL_DIGITS(fval, want, FLOAT_MAX_DIG);
+#else
+            (void)want;
+#endif
             ndigs_exp = 2;
         }
     }
@@ -203,7 +231,7 @@
              * when rounding to fewer digits than required for
              * exact output, the imprecise code often emits them
              */
-            while (ndigs > 0 && u.dtoa.digits[ndigs - 1] == '0')
+            while (ndigs > 0 && DTOA_DIGIT(ndigs - 1) == '0')
                 ndigs--;
 
             /* Save requested precision */
@@ -313,7 +341,7 @@
                  * otherwise use 0
                  */
                 if (0 <= exp - n && exp - n < ndigs)
-                    out = u.dtoa.digits[exp - n];
+                    out = DTOA_DIGIT(exp - n);
                 else
                     out = '0';
                 if (--n < -prec) {
@@ -327,12 +355,12 @@
         } else { /* 'e(E)' format	*/
 
             /* mantissa	*/
-            my_putc(u.dtoa.digits[0], stream);
+            my_putc(DTOA_DIGIT(0), stream);
             if (prec > 0) {
                 my_putc('.', stream);
                 int pos = 1;
                 for (pos = 1; pos < 1 + prec; pos++)
-                    my_putc(pos < ndigs ? u.dtoa.digits[pos] : '0', stream);
+                    my_putc(pos < ndigs ? DTOA_DIGIT(pos) : '0', stream);
             } else if (flags & FL_ALT)
                 my_putc('.', stream);
 
@@ -368,3 +396,8 @@
         }
     }
 }
+
+#undef DTOA_DIGIT
+#ifdef DTOA_ALL_DIGITS
+#undef DTOA_ALL_DIGITS
+#endif

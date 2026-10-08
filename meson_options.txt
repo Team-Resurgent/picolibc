@@ -151,6 +151,8 @@ option('io-long-double', type: 'boolean', value: false,
        description: 'enable long double type support in IO functions printf/scanf')
 option('io-float-exact', type: 'boolean', value: true,
        description: 'use float/string code which supports round-tripping')
+option('io-float-all-digits', type: 'boolean', value: false,
+       description: 'printf produces every requested significant digit of a double exactly, past the 17 the float/string code generates')
 option('atomic-ungetc', type: 'boolean', value: true,
        description: 'use atomics in fgetc/ungetc to make them re-entrant')
 option('posix-console', type: 'boolean', value: false,

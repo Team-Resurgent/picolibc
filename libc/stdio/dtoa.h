@@ -123,6 +123,42 @@ struct dtoa {
     char    digits[DTOA_DIGITS];
 };
 
+/*
+ * __IO_FLOAT_ALL_DIGITS: printf produces every requested significant digit of
+ * a binary64 value exactly, as C requires up to DECIMAL_DIG digits and as glibc
+ * and MSVC do for any precision. Without it, output past the digits the dtoa
+ * engine generates is zero-filled: past DTOA_MAX_DIG, and past the shortest
+ * round-trip digits it returns when asked for more than that (so "%.16e" of
+ * 1/3 printed 3.3333333333333330e-01, not ...331e-01).
+ */
+#if defined(__IO_FLOAT_ALL_DIGITS) && defined(_NEED_IO_FLOAT64)
+#define _NEED_IO_FLOAT_ALL_DIGITS
+
+/*
+ * Whether zero-filling the shortest round-trip digits of the binary64 value
+ * 'bits' to 'ndig' significant digits is the correctly rounded result. Those
+ * digits are within half an ulp of the value; for a normal double that is
+ * below 2^-53 * 10^(exp + 1), less than half a unit in the 15th digit
+ * (DBL_DIG), so up to 15 digits it is. A subnormal's ulp is wider, so not.
+ */
+#define DTOA_PAD_EXACT(bits, ndig) ((ndig) <= 15 && (((bits) >> 52) & 0x7ff) != 0)
+
+/* A double's exact decimal expansion has at most 767 significant digits. */
+#define DTOA_BIG_LIMBS 86
+
+struct dtoa_big {
+    int32_t  exp;     /* as in struct dtoa, which shares this initial sequence */
+    uint8_t  flags;   /* as in struct dtoa */
+    int16_t  ndigits; /* decimal digits held in limb[] */
+    uint32_t limb[DTOA_BIG_LIMBS]; /* base 10^9, least significant first */
+};
+
+int  __dtoa_big_engine(uint64_t x, struct dtoa_big *dtoa, int max_digits, bool fmode,
+                       int max_decimals);
+
+char __dtoa_big_digit(const struct dtoa_big *dtoa, int i);
+#endif
+
 #ifdef _NEED_IO_FLOAT_LARGE
 int __ldtoa_engine(long double x, struct dtoa *dtoa, int max_digits, bool fmode, int max_decimals);
 
