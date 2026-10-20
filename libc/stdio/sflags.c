@@ -57,6 +57,12 @@ __stdio_flags(const char *mode, int *optr)
             ret |= (__SRD | __SWR);
             o = (o & ~O_ACCMODE) | O_RDWR;
             break;
+        case 'x':
+            /* C11 exclusive create: fail, with EEXIST, if the file exists. It
+               only means something with O_CREAT ("w" and "a"); "rx" ignores it. */
+            if (o & O_CREAT)
+                o |= O_EXCL;
+            break;
         default:
             break;
         }
